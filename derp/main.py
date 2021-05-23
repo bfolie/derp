@@ -4,7 +4,7 @@ from typing import Optional, List
 from derp.application import Application
 
 
-def main(argv: Optional[List[str]] = None) -> None:
+def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(prog='derp')
     parser.add_argument("target", help="file or directory to scan for deprecations")
     version_help = "current version of your software, either passed as a string or a path to a " \
