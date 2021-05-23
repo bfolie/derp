@@ -22,7 +22,7 @@ If `src/my_app/__version__.py` contains the version number, invoke the following
 derp src/my_app src/my_app/__version__.py
 ```
 
-Including this command as part of a CI/CD script will ensure that deprecations are done thoughtfully and removed on schedule.
+Including this command as part of a CI/CD script will ensure that deprecations are done thoughtfully and that deprecated code is removed on schedule.
 
 ## Potentially Asked Questions
 
