@@ -4,9 +4,6 @@ from typing import Optional, List
 from derp.application import Application
 
 
-__name__ = "derp"
-
-
 def main(argv: Optional[List[str]] = None) -> None:
     parser = argparse.ArgumentParser(prog='derp')
     parser.add_argument("target", help="file or directory to scan for deprecations")

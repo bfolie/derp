@@ -1,4 +1,5 @@
 import os
+import re
 from typing import Optional, List, Dict
 from derp.version_number import VersionNumber
 from derp.walker import collect_deprecation_errors
@@ -8,7 +9,7 @@ class Application:
     """Abstract the application as a class.
 
     This class is stateful. It stores results as it runs and is meant to be exited
-    after it runs, not resused.
+    after it runs, not reused.
 
     Parameters
     ----------
@@ -45,9 +46,25 @@ class Application:
         self.file_paths = all_files
 
     def _initialize_version_number(self):
-        """Initialize current verison number either by parsing a file or a version string."""
-        # TODO: parse from a file that contains the version number
-        self.current_version = VersionNumber(self.version)
+        """Initialize current version number either by parsing a file or a version string."""
+        if os.path.isfile(self.version):
+            with open(self.version) as fp:
+                file_text = fp.read()
+                # regex captures sequence of integers separated by periods, surrounded by quotes
+                pattern = "[\'\"]((?:\\d+\\.)*\\d+)[\'\"]"
+                matches = list(re.finditer(pattern, file_text))
+                if len(matches) == 0:
+                    raise ValueError(f"File {self.version} did not contain snippets that could "
+                                     f"be parsed as version numbers")
+                elif len(matches) == 1:
+                    version_string = matches[0].groups()[0]
+                    self.current_version = VersionNumber(version_string)
+                else:
+                    all_matches = [match.group() for match in matches]
+                    raise ValueError(f"File {self.version} contains multiple snippets that could"
+                                     f"be parsed as verison numbers: {all_matches}")
+        else:
+            self.current_version = VersionNumber(self.version)
 
     def initialize(self):
         """Set class attributes that are not passed in directly."""
