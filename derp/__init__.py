@@ -12,7 +12,7 @@ to the relvant node types listed below caused it to take ~30 ms.
 RELEVANT_NODE_TYPES = (ast.Module, ast.ClassDef, ast.FunctionDef)
 
 """List of classes corresponding to ways a developer might mark a deprecation.
-This currently only supports the @deprecated decorator from python's built-in deprecation
+This currently only supports the @deprecated decorator from python's deprecation
 library. For a discussion of how to add more possibilities, see discussion in deprecation.py
 """
 DEPRECATION_TYPE_LIST = [PythonDeprecation]

@@ -1,5 +1,5 @@
 """Classes corresponding to way a developer might mark something as deprecated.
-Currently, the only supported option is to use the @deprecated decorator from python's built-in
+Currently, the only supported option is to use the @deprecated decorator from python's
 deprecation library. This is captured with PythonDeprecation. Additional types of deprecation
 can be added by creating new classes that extend Deprecation, and including them in the list
 ``DEPRECATION_TYPE_LIST`` in __init__.py.
@@ -84,7 +84,7 @@ class PythonDeprecation(Deprecation):
 
         """
         if self.deprecated_in is None or self.removed_in is None:
-            return f"Both 'deprecated_in' and 'removed_in' must be specified"
+            return "Both 'deprecated_in' and 'removed_in' must be specified"
         try:
             removed_version = VersionNumber(self.removed_in)
             if current_version >= removed_version:
