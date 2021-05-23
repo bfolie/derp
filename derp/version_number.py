@@ -26,10 +26,15 @@ class VersionNumber:
         self.version_numbers = version_numbers
 
     def __eq__(self, other):
-        return self.version_numbers == other.version_numbers
+        for self_num, other_num in \
+                itertools.zip_longest(self.version_numbers, other.version_numbers, fillvalue=0):
+            if self_num != other_num:
+                return False
+        return True
 
     def __lt__(self, other):
-        for self_num, other_num in itertools.zip_longest(self.version_numbers, other.version_numbers, fillvalue=0):
+        for self_num, other_num in \
+                itertools.zip_longest(self.version_numbers, other.version_numbers, fillvalue=0):
             if self_num < other_num:
                 return True
             elif self_num > other_num:
@@ -40,4 +45,10 @@ class VersionNumber:
         return False
 
     def __ge__(self, other):
-        return not self.__lt__(other)
+        return not self < other
+
+    def __le__(self, other):
+        return self < other or self == other
+
+    def __gt__(self, other):
+        return not self <= other

@@ -1,7 +1,7 @@
 import argparse
 import sys
 from typing import Optional, List
-from .application import Application
+from derp.application import Application
 
 
 __name__ = "derp"
@@ -9,8 +9,11 @@ __name__ = "derp"
 
 def main(argv: Optional[List[str]] = None) -> None:
     parser = argparse.ArgumentParser(prog='derp')
-    parser.add_argument("target")
-    parser.add_argument("version")
+    parser.add_argument("target", help="file or directory to scan for deprecations")
+    version_help = "current version of your software, either passed as a string or a path to a " \
+                   "file that contains the version. Must be specified as a sequence of integers " \
+                   "separated by periods, e.g., '1.23.4'."
+    parser.add_argument("version", help=version_help)
     args = parser.parse_args(argv)
 
     app = Application(target=args.target, version=args.version)

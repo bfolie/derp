@@ -5,6 +5,18 @@ from derp.walker import collect_deprecation_errors
 
 
 class Application:
+    """Abstract the application as a class.
+
+    This class is stateful. It stores results as it runs and is meant to be exited
+    after it runs, not resused.
+
+    Parameters
+    ----------
+    target: str
+        path to the file or directory to scan for deprecations
+    version: str
+        version number, either as a string or a path to a file that contains the version number
+    """
 
     def __init__(self, target: str, version: str):
         self.target = target
@@ -14,10 +26,8 @@ class Application:
         self.failures: Dict[str, List[str]] = None
         self.catastrophic_failure = False
 
-    def initialize(self):
-        self.current_version = VersionNumber(self.version)
-        # TODO: parse from a file that contains the version number
-
+    def _initialize_absolute_paths(self):
+        """Initialize a list of all paths to inspect."""
         all_files = []
         target_path = os.path.join(os.getcwd(), self.target)
         if os.path.isfile(target_path):
@@ -34,7 +44,18 @@ class Application:
             raise ValueError(f"No python modules found at {self.target}")
         self.file_paths = all_files
 
+    def _initialize_version_number(self):
+        """Initialize current verison number either by parsing a file or a version string."""
+        # TODO: parse from a file that contains the version number
+        self.current_version = VersionNumber(self.version)
+
+    def initialize(self):
+        """Set class attributes that are not passed in directly."""
+        self._initialize_version_number()
+        self._initialize_absolute_paths()
+
     def run_checks(self):
+        """Run deprecation check against all files."""
         assert isinstance(self.current_version, VersionNumber)
         self.failures = dict()
         for file_path in self.file_paths:
@@ -43,6 +64,7 @@ class Application:
                 self.failures[file_path] = errors
 
     def report(self):
+        """Print failures"""
         if self.failures:
             for path, errors in self.failures.items():
                 print(f"{path}:")
@@ -54,6 +76,7 @@ class Application:
         self.report()
 
     def run(self):
+        """Run the application, catching exceptions and keyboard interrupts"""
         try:
             self._run()
         except (ValueError, AssertionError) as exc:
@@ -63,7 +86,8 @@ class Application:
             print("Caught keyboard interrupt from user")
             self.catastrophic_failure = True
 
-    def exit(self):
+    def exit(self) -> int:
+        """Return exit code, 0 for success or 1 for failure"""
         if self.catastrophic_failure or self.failures is not None:
             return 1
         else:

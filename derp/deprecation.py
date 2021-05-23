@@ -1,24 +1,39 @@
+"""Classes corresponding to way a developer might mark something as deprecated.
+Currently, the only supported option is to use the @deprecated decorator from python's built-in
+deprecation library. This is captured with PythonDeprecation. Additional types of deprecation
+can be added by creating new classes that extend Deprecation, and including them in the list
+``DEPRECATION_TYPE_LIST`` in __init__.py.
+"""
+
 import ast
+from abc import abstractmethod, ABC
 from typing import List, Optional
 from derp.version_number import VersionNumber
 
 
-class PythonDeprecation:
+class Deprecation(ABC):
+    """Abstract representation of a way to mark deprecations.
+    There are two things any child class ust implement.
+    * An initialization method that takes a node of type ast.AST and throws a ValueError
+        if it can't be parsed. Deprecations should only be initialized within a
+        try-except block.
+    * A check_error method that takes the current version and returns a string if there is
+        an error, otherwise returns None.
+    """
+
+    @abstractmethod
+    def check_error(self, current_version: VersionNumber) -> Optional[str]:
+        """Return a user-facing error message if the deprecation is invalid."""
+        raise NotImplementedError
+
+
+class PythonDeprecation(Deprecation):
     """Attempt to parse a decorator from python's deprecation package.
 
     Because we don't know if a node corresponds to a deprecation until we parse it,
     we use exceptions to control the flow of the program.
     ValueErrors are typical when initializing PythonDeprecation, and so it should only
     be initialized within a try-except block.
-
-    There are other decorator tools one can use to denote deprecation.
-    A separate class would need to be created for each such tool we want to support.
-    In that case, we'd want to create an abstract base class for them to extend.
-    The important parts of the interface are:
-    * An initialization method that takes a node of type ast.AST and throws a ValueError
-        if it can't be parsed
-    * A check_error method that takes the current version and returns a string if there is
-        an error, otherwise returns None
 
     Parameters
     ----------

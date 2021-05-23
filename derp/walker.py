@@ -135,8 +135,20 @@ def _walk_nodes_filter_transform(
             yield maybe_result
 
 
-def collect_deprecation_errors(path: str, current_version: VersionNumber) -> Optional[List[str]]:
-    with open(path) as source:
+def collect_deprecation_errors(
+        filepath: str,
+        current_version: VersionNumber
+) -> Optional[List[str]]:
+    """Collect all deprecation errors in a given module.
+
+    Parameters
+    ----------
+    filepath: str
+        path to a python module
+    current_version: VersionNumber
+        current version of the software against which to check deprecation removal
+    """
+    with open(filepath) as source:
         tree = ast.parse(source.read())
         deprecation_generator = _walk_nodes_filter_transform(
             tree,
