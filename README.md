@@ -43,7 +43,8 @@ It's fine for deprecated code to stick around longer than expected, but it shoul
 
 **What type of deprecations does derp catch?**
 
-On classes and methods, derp catches a single `@deprecation()` annotation.
+Currently, derp only works with the [deprecation](https://pypi.org/project/deprecation/) library.
+It catches a single `@deprecated` annotation on a class or method.
 
 **What if I use a different deprecation tool or want to deprecate something that's neither a class nor a method?**
 
@@ -51,14 +52,14 @@ Tell me about your use case, and I might add it.
 Alternatively, open a PR.
 See "derp/deprecation.py" for a discussion of how to add more types of deprecations.
 
-**What if I include multiple deprecation annotations?**
+**What if I have multiple deprecation annotations on a single method?**
 
 Don't do that.
 Why are you doing that?
 
 OK fine, if there's a legitimate reason to do this, let me know and I'll think about supporting it.
 
-**Couldn't I use the @fail_if_not_removed decorator?**
+**Couldn't I use the `@fail_if_not_removed` decorator?**
 
 Yeah, but that requires a developer to be conscientious every time they deprecate something.
 You have to voluntarily point it to the version number, select a removal version, and add `@fail_if_not_removed` on all relevant tests.

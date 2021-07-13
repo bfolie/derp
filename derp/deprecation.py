@@ -28,7 +28,7 @@ class Deprecation(ABC):
 
 
 class PythonDeprecation(Deprecation):
-    """Attempt to parse a decorator from python's deprecation package.
+    """Attempt to parse a decorator from the deprecation library.
 
     Because we don't know if a node corresponds to a deprecation until we parse it,
     we use exceptions to control the flow of the program.
