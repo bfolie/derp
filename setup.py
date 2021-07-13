@@ -7,7 +7,7 @@ with open('README.md', 'r') as f:
 
 setup(
     name="derp",
-    version="0.1.0",
+    version="0.1.1",
     author="Brendan Folie",
     author_email="bfolie@citrine.io",
     url="https://github.com/bfolie/derp",
