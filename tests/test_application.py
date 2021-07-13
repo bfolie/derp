@@ -6,8 +6,8 @@ from derp.version_number import VersionNumber
 dirname = os.path.dirname(__file__)
 
 
-def test_application():
-    """An integration test of the application against a test file"""
+def test_application_failure():
+    """An integration test of the application against a test file with errors."""
     target = os.path.join(dirname, "resources/test_package/test_module.py")
     version = "1.0.0"
     app = Application(target, version)
@@ -23,10 +23,21 @@ def test_application():
     # quartic (no removal version specified),
     # and _old_display (current version is past removal version)
     assert len(failures) == 4
+    assert app.exit() == 1
+
+
+def test_application_success():
+    """An integration test of the application against a test file with no errors."""
+    target = os.path.join(dirname, "resources/test_package/subdirectory/another_test_module.py")
+    version = "1.0.0"
+    app = Application(target, version)
+    app.run()
+    assert len(app.failures) == 0
+    assert app.exit() == 0
 
 
 def test_version_parsing():
-    """Test that version can be specified through a file"""
+    """Test that version can be specified through a file."""
     target = os.path.join(dirname, "resources/test_package/test_module.py")
     version = os.path.join(dirname, "resources/test_package/__version__.py")
     app = Application(target, version)
@@ -51,7 +62,7 @@ def test_version_parsing():
 
 
 def test_file_gathering():
-    """Test that python files are gathered from a directory and its subdirectories"""
+    """Test that python files are gathered from a directory and its subdirectories."""
     target = os.path.join(dirname, "resources/test_package")
     version = "1.0.0"
     app = Application(target, version)

@@ -105,7 +105,8 @@ class Application:
 
     def exit(self) -> int:
         """Return exit code, 0 for success or 1 for failure"""
-        if self.catastrophic_failure or self.failures is not None:
+        found_errors = self.failures is not None and len(self.failures) > 0
+        if self.catastrophic_failure or found_errors:
             return 1
         else:
             return 0
