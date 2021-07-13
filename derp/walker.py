@@ -2,11 +2,11 @@ import ast
 from typing import Optional, Iterator, Any, Callable, List
 
 from derp import RELEVANT_NODE_TYPES, DEPRECATION_TYPE_LIST
-from derp.deprecation import PythonDeprecation, WrappedDeprecation
+from derp.deprecation import DeprecationAnnotation, WrappedDeprecation
 from derp.version_number import VersionNumber
 
 
-def _parse_deprecation(decorator: ast.AST) -> Optional[PythonDeprecation]:
+def _parse_deprecation(decorator: ast.AST) -> Optional[DeprecationAnnotation]:
     """Parse a decorator node to see if it represents a deprecation of some sort.
 
     If the decorator can be parsed to multiple types of deprecations, only the first one

@@ -1,6 +1,6 @@
 """Classes corresponding to way a developer might mark something as deprecated.
 Currently, the only supported option is to use the @deprecated decorator from python's
-deprecation library. This is captured with PythonDeprecation. Additional types of deprecation
+deprecation library. This is captured with DeprecationAnnotation. Additional types of deprecation
 can be added by creating new classes that extend Deprecation, and including them in the list
 ``DEPRECATION_TYPE_LIST`` in __init__.py.
 """
@@ -13,7 +13,7 @@ from derp.version_number import VersionNumber
 
 class Deprecation(ABC):
     """Abstract representation of a way to mark deprecations.
-    There are two things any child class ust implement.
+    There are two things any child class must implement.
     * An initialization method that takes a node of type ast.AST and throws a ValueError
         if it can't be parsed. Deprecations should only be initialized within a
         try-except block.
@@ -27,12 +27,12 @@ class Deprecation(ABC):
         raise NotImplementedError
 
 
-class PythonDeprecation(Deprecation):
-    """Attempt to parse a decorator from python's deprecation package.
+class DeprecationAnnotation(Deprecation):
+    """Attempt to parse a @deprecated decorator from the deprecation package.
 
     Because we don't know if a node corresponds to a deprecation until we parse it,
     we use exceptions to control the flow of the program.
-    ValueErrors are typical when initializing PythonDeprecation, and so it should only
+    ValueErrors are typical when initializing DeprecationAnnotation, and so it should only
     be initialized within a try-except block.
 
     Parameters
@@ -43,7 +43,7 @@ class PythonDeprecation(Deprecation):
     Raises
     ------
     ValueError
-        If the node cannot be parsed as a PythonDeprecation
+        If the node cannot be parsed as a DeprecationAnnotation
 
     """
 
@@ -53,7 +53,7 @@ class PythonDeprecation(Deprecation):
                 func: ast.Name = decorator.func
                 name: str = func.id
                 if not name == "deprecated":
-                    raise ValueError("Decorator does not follow Python Deprecation format")
+                    raise ValueError("Call is not a deprecation decorator")
                 keyword_dict = dict()
                 keywords: List[ast.keyword] = decorator.keywords
                 for keyword in keywords:
@@ -66,16 +66,16 @@ class PythonDeprecation(Deprecation):
                 self.deprecated_in = keyword_dict.get("deprecated_in", None)
                 self.removed_in = keyword_dict.get("removed_in", None)
             except AttributeError:
-                raise ValueError("deprecation decorator must have \'func\' and \'name\' fields")
+                raise ValueError("Call must have \'func\' and \'name\' fields")
         else:
-            raise ValueError("not a deprecation decorator")
+            raise ValueError("not a function call")
 
     def check_error(self, current_version: VersionNumber) -> Optional[str]:
         """Return a user-facing error message if the deprecation is invalid.
 
-        In order to be valid, a PythonDeprecation must have fields 'deprecated_in'
-        and 'removed_in' both specified. Additionally, the current version of the software
-        must be less than the expected removal version.
+        In order to be valid, a DeprecationAnnotation must have fields 'deprecated_in'
+        and 'removed_in' both specified with keyword args. Additionally, the current version of
+         the software must be less than the expected removal version.
 
         Parameters
         ----------
@@ -84,7 +84,73 @@ class PythonDeprecation(Deprecation):
 
         """
         if self.deprecated_in is None or self.removed_in is None:
-            return "Both 'deprecated_in' and 'removed_in' must be specified"
+            return "Both 'deprecated_in' and 'removed_in' must be specified with keyword args"
+        try:
+            removed_version = VersionNumber(self.removed_in)
+            if current_version >= removed_version:
+                return "Current version, {}, exceeds expected removal version, {}" \
+                    .format(current_version.version, removed_version.version)
+        except ValueError as e:
+            return f"Encountered an exception when parsing a version number: {e}"
+
+
+class DeprecationDeprecatedWarning(Deprecation):
+    """Attempt to parse a DeprecatedWarning from the deprecation package.
+
+    Because we don't know if a node corresponds to a deprecation until we parse it,
+    we use exceptions to control the flow of the program.
+    ValueErrors are typical when initializing DeprecationDeprecatedWarning, and so it should only
+    be initialized within a try-except block.
+
+    Parameters
+    ----------
+    decorator: ast.AST
+        An ast node that is expected to correspond to a DeprecatedWarning
+
+    Raises
+    ------
+    ValueError
+        If the node cannot be parsed as a DeprecatedWarning
+
+    """
+    def __init__(self, warning: ast.AST):
+        if isinstance(warning, ast.Call):
+            try:
+                func: ast.Name = warning.func
+                name: str = func.id
+                if not name == "DeprecatedWarning":
+                    raise ValueError("Call is not a DeprecatedWarning")
+                keyword_dict = dict()
+                keywords: List[ast.keyword] = warning.keywords
+                for keyword in keywords:
+                    try:
+                        arg = keyword.arg
+                        value = keyword.value.s
+                        keyword_dict[arg] = value
+                    except AttributeError:
+                        pass
+                self.deprecated_in = keyword_dict.get("deprecated_in", None)
+                self.removed_in = keyword_dict.get("removed_in", None)
+            except AttributeError:
+                raise ValueError("Call must have \'func\' and \'name\' fields")
+        else:
+            raise ValueError("not a function call")
+
+    def check_error(self, current_version: VersionNumber) -> Optional[str]:
+        """Return a user-facing error message if the DeprecatedWarning is invalid.
+
+        In order to be valid, a DeprecatedWarning must have fields 'deprecated_in'
+        and 'removed_in' both specified with keyword args. Additionally, the current version of
+         the software must be less than the expected removal version.
+
+        Parameters
+        ----------
+        current_version: VersionNumber
+            the current version of the software, against which to check the deprecation
+
+        """
+        if self.deprecated_in is None or self.removed_in is None:
+            return "Both 'deprecated_in' and 'removed_in' must be specified with keyword args"
         try:
             removed_version = VersionNumber(self.removed_in)
             if current_version >= removed_version:
@@ -103,11 +169,11 @@ class WrappedDeprecation:
     ----------
     name: str
         the name of the method or class that has the deprecation decorator
-    deprecation: PythonDeprecation
+    deprecation: DeprecationAnnotation
         a representation of the deprecation decorator
     """
 
-    def __init__(self, name: str, deprecation: PythonDeprecation):
+    def __init__(self, name: str, deprecation: DeprecationAnnotation):
         self.name = name
         self.deprecation = deprecation
 

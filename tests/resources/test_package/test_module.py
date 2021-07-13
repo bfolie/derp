@@ -1,5 +1,8 @@
+
 """A dummy module for testing the application"""
-from deprecation import deprecated
+from deprecation import deprecated, DeprecatedWarning, UnsupportedWarning
+from math import log
+import warnings
 
 
 @deprecated(deprecated_in="0.12.3", removed_in="1.0.0")
@@ -44,3 +47,9 @@ class LiveClass:
 
         for i in range(self.x):
             _new_display(i)
+
+    def log(self, base: float = None, safe: bool = None):
+        if base is not None:
+            the_warning = DeprecatedWarning("safe", deprecated_in="0.5", removed_in="0.7", details="")
+            warnings.warn(the_warning)
+        return log(self.x)
